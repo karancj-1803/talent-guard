@@ -1,5 +1,5 @@
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status as http_status
 from app.dependencies import get_current_user
 from app.schemas import (
     PrioritiesResponse,
@@ -25,7 +25,7 @@ async def get_run_priorities(
     status: Optional[str] = Query(None),
     current_user: UserProfile = Depends(get_current_user)
 ):
-    # Resolve 'default' or 'latest' run ID
+    # Resolve 'default' or 'latest' run ID to the user's latest run
     if run_id in ("default", "latest"):
         runs = PersistenceService.list_runs(user_id=current_user.id)
         if not runs:
@@ -38,19 +38,20 @@ async def get_run_priorities(
             )
         run_id = runs[0]["id"]
 
-    # Verify run exists
+    # Verify run exists and is owned by the authenticated user
     run = PersistenceService.get_run(run_id=run_id, user_id=current_user.id)
     if not run:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
+            status_code=http_status.HTTP_404_NOT_FOUND,
             detail={
                 "code": "RUN_NOT_FOUND",
-                "message": f"Run with ID '{run_id}' not found."
+                "message": f"Run with ID '{run_id}' not found or not accessible."
             }
         )
 
     records, total = PersistenceService.get_priorities(
         run_id=run_id,
+        user_id=current_user.id,
         limit=limit,
         offset=offset,
         search=search,
@@ -94,20 +95,26 @@ async def get_employee_detail(
         runs = PersistenceService.list_runs(user_id=current_user.id)
         if runs:
             run_id = runs[0]["id"]
+        else:
+            run_id = None
 
-    emp = PersistenceService.get_employee_detail(run_id=run_id, employee_risk_id=employee_risk_id)
+    emp = PersistenceService.get_employee_detail(
+        run_id=run_id,
+        employee_risk_id=employee_risk_id,
+        user_id=current_user.id
+    )
     if not emp:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
+            status_code=http_status.HTTP_404_NOT_FOUND,
             detail={
                 "code": "EMPLOYEE_NOT_FOUND",
-                "message": f"Employee record '{employee_risk_id}' not found."
+                "message": f"Employee record '{employee_risk_id}' not found or not accessible."
             }
         )
 
     reasons = [RiskReason(**reason) for reason in emp.get("risk_reasons", [])]
     recommendations = [Recommendation(**rec) for rec in emp.get("recommendations", [])]
-    review_raw = emp.get("review", {})
+    review_raw = emp.get("review") or {}
 
     return EmployeeDetailResponse(
         id=emp["id"],

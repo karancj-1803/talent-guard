@@ -4,7 +4,7 @@ import { useAuth } from '../app/AuthProvider'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../components/ui/card'
 import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
-import { ShieldAlert, Lock, Mail, CheckCircle2, AlertCircle } from 'lucide-react'
+import { ShieldAlert, Lock, Mail, AlertCircle } from 'lucide-react'
 
 export function LoginPage() {
   const [email, setEmail] = useState('elena.vance@technova.internal')
@@ -26,22 +26,7 @@ export function LoginPage() {
       await signIn(email, password)
       navigate(from, { replace: true })
     } catch (err) {
-      setError(err.message || 'Authentication failed. Please verify your credentials.')
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const handleQuickDemoLogin = async () => {
-    setEmail('elena.vance@technova.internal')
-    setPassword('password123')
-    setIsLoading(true)
-    setError(null)
-    try {
-      await signIn('elena.vance@technova.internal', 'password123')
-      navigate(from, { replace: true })
-    } catch (err) {
-      setError(err.message)
+      setError(err.message || 'Authentication failed. Please verify your Supabase credentials.')
     } finally {
       setIsLoading(false)
     }
@@ -106,9 +91,6 @@ export function LoginPage() {
                   <label className="text-xs font-semibold text-slate-300 block">
                     Password
                   </label>
-                  <span className="text-[11px] text-emerald-400 cursor-pointer hover:underline">
-                    Demo Credentials
-                  </span>
                 </div>
                 <div className="relative">
                   <Lock className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -133,29 +115,6 @@ export function LoginPage() {
               >
                 Sign In to Command Center
               </Button>
-
-              <div className="w-full text-center">
-                <div className="relative my-2">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-slate-800"></div>
-                  </div>
-                  <div className="relative flex justify-center text-[10px] uppercase">
-                    <span className="bg-slate-950 px-2 text-slate-500 font-mono">Evaluation Shortcut</span>
-                  </div>
-                </div>
-
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={handleQuickDemoLogin}
-                  disabled={isLoading}
-                  className="w-full border-slate-700 bg-slate-900/90 text-slate-300 hover:text-white hover:bg-slate-800 text-xs py-2 gap-1.5"
-                >
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Instant Login as Demo HR Manager (Elena Vance)</span>
-                </Button>
-              </div>
             </CardFooter>
           </form>
         </Card>

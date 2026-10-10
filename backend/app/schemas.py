@@ -22,6 +22,10 @@ class HealthResponse(BaseModel):
     version: str = "1.0.0"
     environment: str
     dataset_available: bool
+    model_ready: bool = False
+    model_status: str = "unknown"
+    active_run_id: Optional[str] = None
+    artifact_version: Optional[str] = None
 
 
 class UserProfile(BaseModel):

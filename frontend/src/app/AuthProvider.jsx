@@ -11,15 +11,10 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     async function initAuth() {
       try {
-        let currentUser = await authService.getCurrentUser()
-        if (!currentUser) {
-          // Auto-authenticate with demo token if session is missing
-          const res = await authService.signIn("elena.vance@technova.internal", "password123")
-          currentUser = res.user
-        }
+        const currentUser = await authService.getCurrentUser()
         setUser(currentUser)
       } catch (err) {
-        console.warn('Auth initialization warning:', err)
+        console.warn('Auth session verification:', err)
         setUser(null)
       } finally {
         setLoading(false)
@@ -62,6 +57,7 @@ export function AuthProvider({ children }) {
   )
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
   const context = useContext(AuthContext)
   if (!context) {

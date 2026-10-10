@@ -1,1 +1,3 @@
-export { default, App } from './app/App.jsx'
+import App from './app/App.jsx'
+
+export default App

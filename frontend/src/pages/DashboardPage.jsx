@@ -8,7 +8,7 @@ import { EmptyRunState } from '../components/dashboard/EmptyRunState'
 import { Button } from '../components/ui/button'
 import { runService } from '../services/runService'
 import { priorityService } from '../services/priorityService'
-import { Users, Award, Target, CheckSquare, Cpu, ArrowRight, RefreshCw } from 'lucide-react'
+import { Users, Award, Target, CheckSquare, ArrowRight, RefreshCw } from 'lucide-react'
 
 export function DashboardPage() {
   const [latestRun, setLatestRun] = useState(null)
@@ -94,13 +94,6 @@ export function DashboardPage() {
             <span className="hidden sm:inline">Refresh</span>
           </Button>
 
-          <Link to="/model-lab">
-            <Button variant="secondary" size="sm" className="text-xs h-9 gap-1.5 font-semibold">
-              <Cpu className="w-3.5 h-3.5 text-emerald-700" />
-              <span>Model Lab</span>
-            </Button>
-          </Link>
-
           <Link to="/priorities">
             <Button size="sm" className="text-xs h-9 gap-1.5 font-semibold bg-emerald-600 hover:bg-emerald-700 text-white">
               <span>Inspect Priorities</span>
@@ -123,7 +116,7 @@ export function DashboardPage() {
 
         <MetricCard
           title="Model Discrimination (ROC-AUC)"
-          value={latestRun.metrics?.roc_auc ? latestRun.metrics.roc_auc.toFixed(3) : '0.841'}
+          value={latestRun.metrics?.roc_auc != null ? latestRun.metrics.roc_auc.toFixed(3) : 'N/A'}
           subtext="Stratified held-out test split"
           badge="Balanced"
           icon={Award}
@@ -132,7 +125,7 @@ export function DashboardPage() {
 
         <MetricCard
           title="Capacity Accuracy (P@50)"
-          value={latestRun.metrics?.precision_at_50 ? `${(latestRun.metrics.precision_at_50 * 100).toFixed(1)}%` : '68.0%'}
+          value={latestRun.metrics?.precision_at_50 != null ? `${(latestRun.metrics.precision_at_50 * 100).toFixed(1)}%` : 'N/A'}
           subtext="Precision within top-50 cohort"
           badge="Held-out"
           icon={Users}

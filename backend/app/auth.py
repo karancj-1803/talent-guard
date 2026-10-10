@@ -44,33 +44,40 @@ async def verify_supabase_token(authorization: Optional[str] = Header(None)) -> 
 
     token = parts[1]
 
-    # Special handling for development/demo test token
-    if settings.DEBUG and token in ("mock_jwt_token_demo_hr_user", "test_token_valid"):
-        return UserProfile(
-            id="usr-a89b3f12-45e0-4781-a9c1-4209df349801",
-            email="elena.vance@technova.internal",
-            display_name="Elena Vance",
-            role="hr_manager"
-        )
-
-    # Validate against Supabase
+    # Validate against Supabase Auth
     client = get_supabase_client()
     if client:
         try:
             user_response = client.auth.get_user(token)
             if user_response and user_response.user:
                 u = user_response.user
+                user_id = str(u.id)
+                email = u.email
+                meta = u.user_metadata or {}
+                display_name = meta.get("display_name", email.split("@")[0] if email else "HR Manager")
+                role = meta.get("role", "hr_manager")
+
+                # Ensure profile exists in public.profiles table
+                try:
+                    client.table("profiles").upsert({
+                        "id": user_id,
+                        "display_name": display_name,
+                        "role": role
+                    }).execute()
+                except Exception:
+                    pass
+
                 return UserProfile(
-                    id=str(u.id),
-                    email=u.email,
-                    display_name=u.user_metadata.get("display_name", u.email.split("@")[0] if u.email else "HR Manager"),
-                    role=u.user_metadata.get("role", "hr_manager")
+                    id=user_id,
+                    email=email,
+                    display_name=display_name,
+                    role=role
                 )
-        except Exception as e:
+        except Exception:
             # Token invalid according to Supabase
             pass
 
-    # Fallback to local JWT decode if JWT secret is configured
+    # Fallback to backend JWT verification if secret key is configured
     if settings.SUPABASE_SECRET_KEY:
         try:
             payload = jwt.decode(
@@ -81,11 +88,12 @@ async def verify_supabase_token(authorization: Optional[str] = Header(None)) -> 
             )
             user_id = payload.get("sub")
             if user_id:
+                meta = payload.get("user_metadata") or {}
                 return UserProfile(
                     id=str(user_id),
                     email=payload.get("email"),
-                    display_name=payload.get("user_metadata", {}).get("display_name"),
-                    role=payload.get("user_metadata", {}).get("role", "hr_manager")
+                    display_name=meta.get("display_name"),
+                    role=meta.get("role", "hr_manager")
                 )
         except Exception:
             pass

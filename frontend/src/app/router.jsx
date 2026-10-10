@@ -4,7 +4,6 @@ import { AppShell } from '../components/layout/AppShell'
 import { ProtectedRoute } from './ProtectedRoute'
 import { LoginPage } from '../pages/LoginPage'
 import { DashboardPage } from '../pages/DashboardPage'
-import { ModelLabPage } from '../pages/ModelLabPage'
 import { PrioritiesPage } from '../pages/PrioritiesPage'
 import { EmployeeDetailPage } from '../pages/EmployeeDetailPage'
 import { NotFoundPage } from '../pages/NotFoundPage'
@@ -20,10 +19,6 @@ export const router = createBrowserRouter([
       {
         path: '/',
         element: <DashboardPage />,
-      },
-      {
-        path: '/model-lab',
-        element: <ModelLabPage />,
       },
       {
         path: '/priorities',

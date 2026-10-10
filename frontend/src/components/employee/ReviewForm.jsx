@@ -39,6 +39,10 @@ export function ReviewForm({ employeeRiskId, initialReview, onReviewSaved }) {
         status,
         notes: notes.trim() || null
       })
+
+      if (!res || !res.status) {
+        throw new Error('Server returned an invalid review response.')
+      }
       
       setUpdatedAt(res.updated_at)
       setSavedSuccess(true)
@@ -48,7 +52,8 @@ export function ReviewForm({ employeeRiskId, initialReview, onReviewSaved }) {
         setSavedSuccess(false)
       }, 4000)
     } catch (err) {
-      setErrorMessage(err.message || 'Failed to save review decision')
+      setSavedSuccess(false)
+      setErrorMessage(err.message || 'Failed to save review decision. Please check backend connection.')
     } finally {
       setIsSaving(false)
     }

@@ -5,13 +5,24 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from contextlib import asynccontextmanager
 from app.config import settings
+from app.services.lifecycle_service import LifecycleService
 from app.routers import health, auth, runs, priorities, reviews
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Load compatible saved model artifact and prepared results without retraining
+    LifecycleService.load_artifact()
+    yield
+
 
 app = FastAPI(
     title="TalentGuard API",
     description="Explainable Retention Command Center API with scikit-learn ML pipeline and Supabase integration.",
-    version="1.0.0"
+    version="1.0.0",
+    lifespan=lifespan
 )
 
 # CORS Middleware

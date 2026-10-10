@@ -41,6 +41,7 @@ export function PrioritiesPage() {
   }, [search, department, status])
 
   const handleStatusChange = async (employeeRiskId, newStatus) => {
+    const previousItems = [...items]
     // Optimistic UI update
     setItems(prev => prev.map(emp => {
       if (emp.id === employeeRiskId) {
@@ -58,11 +59,14 @@ export function PrioritiesPage() {
     }))
 
     try {
-      await reviewService.updateReview(employeeRiskId, { status: newStatus })
+      const res = await reviewService.updateReview(employeeRiskId, { status: newStatus })
+      if (!res || !res.status) {
+        throw new Error('Status update returned invalid response')
+      }
     } catch (err) {
-      console.error('Failed to update status:', err)
-      // Revert if error
-      fetchPriorities()
+      console.error('Failed to update review status:', err)
+      // Revert optimistic update immediately
+      setItems(previousItems)
     }
   }
 

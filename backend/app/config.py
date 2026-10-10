@@ -24,6 +24,8 @@ class Settings(BaseSettings):
     SUPABASE_JWT_ISSUER: str = Field(default="")
     
     IBM_HR_DATASET_PATH: str = Field(default="data/WA_Fn-UseC_-HR-Employee-Attrition.csv")
+    USE_LOCAL_STORAGE: bool = Field(default=False)
+    DEFAULT_USER_ID: str = Field(default="0b491252-0c4a-44d8-870e-306ce3bbd6d8")
 
     @property
     def cors_origins(self) -> List[str]:

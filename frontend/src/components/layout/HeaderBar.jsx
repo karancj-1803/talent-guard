@@ -1,11 +1,31 @@
-import React from 'react'
-import { Menu, LogOut, Activity } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
+import { Menu, LogOut, Activity, AlertCircle } from 'lucide-react'
 import { useAuth } from '../../app/AuthProvider'
 import { Button } from '../ui/button'
 import { Badge } from '../ui/badge'
+import { request } from '../../services/apiClient'
 
 export function HeaderBar({ onToggleMobileSidebar, activeTitle = 'Command Center' }) {
   const { user, signOut } = useAuth()
+  const [healthStatus, setHealthStatus] = useState(null)
+
+  useEffect(() => {
+    let isMounted = true
+    async function checkHealth() {
+      try {
+        const data = await request('/health')
+        if (isMounted) setHealthStatus(data)
+      } catch (_err) {
+        if (isMounted) setHealthStatus({ model_ready: false, status: 'offline' })
+      }
+    }
+    checkHealth()
+    const interval = setInterval(checkHealth, 30000)
+    return () => {
+      isMounted = false
+      clearInterval(interval)
+    }
+  }, [])
 
   return (
     <header className="h-16 bg-white/95 backdrop-blur-xs border-b border-slate-200 px-4 md:px-8 flex items-center justify-between sticky top-0 z-20">
@@ -25,11 +45,28 @@ export function HeaderBar({ onToggleMobileSidebar, activeTitle = 'Command Center
       </div>
 
       <div className="flex items-center gap-3 md:gap-4">
-        {/* Model Pipeline Badge */}
-        <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200/80 text-emerald-800 text-xs font-medium">
-          <Activity className="w-3.5 h-3.5 text-emerald-600 animate-pulse" />
-          <span>Model Engine: Ready</span>
-        </div>
+        {/* Dynamic Model Pipeline Readiness Badge */}
+        {healthStatus?.model_ready ? (
+          <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200/80 text-emerald-800 text-xs font-medium">
+            <Activity className="w-3.5 h-3.5 text-emerald-600 animate-pulse" />
+            <span>Model Engine: Ready</span>
+          </div>
+        ) : healthStatus && healthStatus.status === 'offline' ? (
+          <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-50 border border-red-200 text-red-800 text-xs font-medium">
+            <AlertCircle className="w-3.5 h-3.5 text-red-600" />
+            <span>Backend Offline</span>
+          </div>
+        ) : healthStatus ? (
+          <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-medium" title={healthStatus.model_status}>
+            <AlertCircle className="w-3.5 h-3.5 text-amber-600" />
+            <span>Model Engine: {healthStatus.model_status === 'missing_artifact' ? 'Artifact Missing' : 'Degraded'}</span>
+          </div>
+        ) : (
+          <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-50 border border-slate-200 text-slate-600 text-xs font-medium">
+            <Activity className="w-3.5 h-3.5 text-slate-400 animate-pulse" />
+            <span>Model Engine: Checking...</span>
+          </div>
+        )}
 
         {/* User Pill & Sign Out */}
         {user ? (

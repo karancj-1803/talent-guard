@@ -1,11 +1,10 @@
 import React from 'react'
 import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, Cpu, Users, ShieldAlert, Database } from 'lucide-react'
+import { LayoutDashboard, Users, ShieldAlert, Database } from 'lucide-react'
 import { cn } from '../../lib/utils'
 
 const NAV_ITEMS = [
   { name: 'Dashboard', to: '/', icon: LayoutDashboard },
-  { name: 'Model Lab', to: '/model-lab', icon: Cpu },
   { name: 'Top 50 Priorities', to: '/priorities', icon: Users },
 ]
 
