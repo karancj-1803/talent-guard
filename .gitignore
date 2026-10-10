@@ -28,3 +28,5 @@ dist-ssr
 __pycache__/
 *.pyc
 .env
+.pytest_cache/
+storage_data/
